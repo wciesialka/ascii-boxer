@@ -1,9 +1,10 @@
 from PIL import Image
 import os
 from math import floor
+import re
 
 R,G,B = 0,1,2
-MAX_WH = 64 
+MAX_WH = 100
 
 def get_file_path():
     path = input("Image to translate: ")
@@ -14,13 +15,14 @@ def get_file_path():
         return get_file_path()
 
 def get_image():
+    filepath = get_file_path()
     try:
-        img = Image.open(get_file_path())
+        img = Image.open(filepath)
     except:
         print("File is not an image.")
         return get_image()
     else:
-        return img
+        return img, filepath
 
 def resize_if_needed(img):
     size = img.size
@@ -33,30 +35,100 @@ def resize_if_needed(img):
     else:
         return img
 
-def val_to_char(val):
+CHARS = (' ','\u2591','\u2592','\u2593','\u2588')
+
+def val_to_char(val,invert=False):
     v = val/255
+    if invert:
+        v = 1 - v
     if v <= 0.2:
-        return ' '
+        return CHARS[4]
     elif v > 0.2 and v <= 0.4:
-        return '\u2591'
+        return CHARS[3]
     elif v > 0.4 and v <= 0.6:
-        return '\u2592'
+        return CHARS[2]
     elif v > 0.6 and v <= 0.8:
-        return '\u2593'
+        return CHARS[1]
     else:
-        return '\u2588'
+        return CHARS[0]
+
+def get_yn():
+    i = input("[Y/N] ").lower()
+    if i == 'y' or i=='yes':
+        return True
+    elif i =='n' or i=='no':
+        return False
+    else:
+        print("Please enter Y for 'Yes' or N for 'No'")
+        return get_invert()
+
+def write_to_file(text,fallback_filename="ascii-art"):
+    fn = input("File path: ")
+    if fn.endswith("/") or fn.endswith("\\") or fn.endswith(" "):
+        fn += fallback_filename
+    if not fn.endswith(".txt"):
+        fn += ".txt"
+    REGEX = "(?!)(^\/$|(^(?=\/)|^\.|^\.\.|^\~|^\~(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$)"
+    fn = re.sub(REGEX,'',fn)
+    fn = os.path.normpath(fn)
+    if os.path.exists(fn):
+        print("File exists. Overwrite?")
+        can_write = get_yn()
+    else:
+        d = os.path.dirname(fn)
+        if not os.path.exists(d):
+            try:
+                os.makedirs(d)
+            except:
+                print("Could not make directories to that path.")
+                can_write = False
+            else:
+                can_write = True
+        else:
+            can_write = True
+    if can_write:
+        try:
+            f = open(fn,"w")
+        except:
+            print("Could not create or open file for writing. Check permissions and try again.")
+            write_to_file(text,fallback_filename)
+        else:
+            try:
+                f.write(text)
+            except:
+                print("Could not write to file. Try again.")
+                write_to_file(text,fallback_filename)
+            else:
+                print(f"Successfully wrote to file {fn}")
+            finally:
+                f.close()
+    else:
+        print("Could not write to file. Try again.")
+        write_to_file(text,fallback_filename)
+
 
 def main():
-    img = get_image()
+    img, fbfn = get_image()
+    fbfn = os.path.basename(fbfn)
+    fbfn = fbfn[:fbfn.rfind(".")]
     img = resize_if_needed(img).convert(mode="HSV")
     size = img.size
     w,h = size
+    print("Invert colors? (Helps if text displayed is a light color on a dark background.)")
+    invert = get_yn()
+    s = ""
     for y in range(h):
         for x in range(w):
             px = img.getpixel((x,y))
             hue,sat,val = px
-            print(val_to_char(val),end='')
-        print("")
+            s += val_to_char(val,invert=invert)
+        if y < h-1:
+            s += os.linesep
+    print(s)
+    print("Write to file?")
+    if get_yn():
+        with open("test.txt","w") as f:
+            write_to_file(s,fallback_filename=fbfn)
 
 if __name__=="__main__":
     main()
