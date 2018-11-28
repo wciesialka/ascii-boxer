@@ -4,7 +4,7 @@ from math import floor
 import re
 
 R,G,B = 0,1,2
-MAX_WH = 100
+MAX_WH = 128
 
 def get_file_path():
     path = input("Image to translate: ")
