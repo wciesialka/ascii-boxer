@@ -1,5 +1,5 @@
 # ascii-boxer
-Change a picture into ascii art using the various "shade" characters in Unicode.
+Change a picture into ascii art based on the 'lightness,' or 'value,' of each pixel using the various "shade" characters in Unicode.
 
 ## Getting Started
 
