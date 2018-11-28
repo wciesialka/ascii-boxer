@@ -1,3 +1,6 @@
+# ascii-boxer
+# William Ciesialka
+
 from PIL import Image
 import os
 from math import floor
@@ -61,18 +64,22 @@ def get_yn():
         print("Please enter Y for 'Yes' or N for 'No'")
         return get_invert()
 
-def get_line_width():
-    try:
-        i = int(input("Maximum line width: "))
-    except:
-        print("Must be an integer.")
-        return get_line_width()
+def get_line_width(default=MAX_WH):
+    _i = input("Maximum line width: ")
+    if not _i:
+        return default
     else:
-        if i <= 0:
-            print("Must be greater than zero.")
+        try:
+            i = int(_i)
+        except:
+            print("Must be an integer.")
             return get_line_width()
         else:
-            return i
+            if i <= 0:
+                print("Must be greater than zero.")
+                return get_line_width()
+            else:
+                return i
 
 def write_to_file(text,fallback_filename="ascii-art"):
     fn = input("File path: ")
@@ -123,7 +130,7 @@ def main():
     img, fbfn = get_image()
     fbfn = os.path.basename(fbfn)
     fbfn = fbfn[:fbfn.rfind(".")]
-    line_width = get_line_width()
+    line_width = get_line_width(default=img.size[0])
     img = resize_if_needed(img,line_width).convert(mode="HSV")
     size = img.size
     w,h = size
