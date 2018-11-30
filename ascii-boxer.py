@@ -8,6 +8,19 @@ import re
 
 R,G,B = 0,1,2
 MAX_WH = 70 # a little less than the typical max cpl
+COLORS = {
+        "RED": "\033[91m",
+        "GREEN": "\033[92m",
+        "YELLOW": '\033[93m',
+        "BLUE": '\033[34m',
+        "PURPLE": '\033[35m',
+        "CYAN": '\033[96m',
+        "WHITE": '\033[97m',
+        "PINK": '\033[95m',
+        "LGRAY": '\033[37m',
+        "DGRAY": '\033[90m',
+        "BLACK": '\033[30m'
+        }
 
 def get_file_path():
     path = input("Image to translate: ")
@@ -54,6 +67,29 @@ def val_to_char(val,invert=False):
     else:
         return CHARS[0]
 
+def bash_color(h,s):
+    s/=255
+    if s <= 0.2:
+        COLOR = "WHITE"
+    else:
+        if h >= 0 and h < 48:
+            COLOR = "RED"
+        elif h >= 48 and h < 80:
+            COLOR = "YELLOW"
+        elif h >= 80 and h < 112:
+            COLOR = "GREEN"
+        elif h >= 112 and h < 144:
+            COLOR = "CYAN"
+        elif h >= 144 and h < 176:
+            COLOR = "BLUE"
+        elif h >= 176 and h < 208:
+            COLOR = "PURPLE"
+        elif h >= 208 and h < 240:
+            COLOR = "PINK"
+        else:
+            COLOR = "RED"
+    return COLORS[COLOR]
+
 def get_yn():
     i = input("[Y/N] ").lower()
     if i == 'y' or i=='yes' or i == 't' or i == 'true' or i == 'ye':
@@ -90,6 +126,7 @@ def write_to_file(text,fallback_filename="ascii-art"):
     REGEX = "(?!)(^\/$|(^(?=\/)|^\.|^\.\.|^\~|^\~(?=\/))(\/(?=[^/\0])[^/\0]+)*\/?$)"
     fn = re.sub(REGEX,'',fn)
     fn = os.path.normpath(fn)
+    fn = fn.strip()
     if os.path.exists(fn):
         print("File exists. Overwrite?")
         can_write = get_yn()
@@ -141,10 +178,13 @@ def main():
         for x in range(w):
             px = img.getpixel((x,y))
             hue,sat,val = px
-            s += val_to_char(val,invert=invert)
+            c = val_to_char(val,invert=invert)
+            print(f"{bash_color(hue,sat)}{c}",end='')
+            s += c
         if y < h-1:
+            print()
             s += os.linesep
-    print(s)
+    print("\033[39m")
     print("Write to file?")
     if get_yn():
         with open("test.txt","w") as f:
