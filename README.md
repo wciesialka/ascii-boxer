@@ -11,7 +11,7 @@ Change a picture into ascii art based on the 'lightness,' or 'value,' of each pi
 `python3 ascii-boxer.py` and follow the prompts.
 
 ## Authors
-William Ciesialka
+Willow Ciesialka
 
 ## License
 This project is licensed under the Apache 2.0 License - see [LICENSE](LICENSE) for details
